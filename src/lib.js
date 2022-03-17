@@ -195,11 +195,17 @@ export const relativePositionToAbsolutePosition = (y, documentType, relPos, mapp
  * collaboration has begun as all history will be lost
  *
  * @param {Node} doc
+ * @param {number} clientID
  * @param {string} xmlFragment
  * @return {Y.Doc}
  */
-export function prosemirrorToYDoc (doc, xmlFragment = 'prosemirror') {
+export function prosemirrorToYDoc (doc, clientID = null, xmlFragment = 'prosemirror') {
   const ydoc = new Y.Doc()
+  if (clientID) {
+    if (Number.isInteger) ydoc.clientID = clientID
+    else throw Error('clientID must be a valid integer (up to 53 bit)')
+  }
+
   const type = /** @type {Y.XmlFragment} */ (ydoc.get(xmlFragment, Y.XmlFragment))
   if (!type.doc) {
     return ydoc
@@ -218,12 +224,13 @@ export function prosemirrorToYDoc (doc, xmlFragment = 'prosemirror') {
  *
  * @param {Schema} schema
  * @param {any} state
+ * @param {number} clientID
  * @param {string} xmlFragment
  * @return {Y.Doc}
  */
-export function prosemirrorJSONToYDoc (schema, state, xmlFragment = 'prosemirror') {
+export function prosemirrorJSONToYDoc (schema, state, clientID = null, xmlFragment = 'prosemirror') {
   const doc = Node.fromJSON(schema, state)
-  return prosemirrorToYDoc(doc, xmlFragment)
+  return prosemirrorToYDoc(doc, clientID, xmlFragment)
 }
 
 /**

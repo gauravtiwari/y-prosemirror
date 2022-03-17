@@ -7,10 +7,12 @@ import * as Y from 'yjs'
 import { applyRandomTests } from 'yjs/testHelper'
 
 import { ySyncPlugin, prosemirrorJSONToYDoc, yDocToProsemirrorJSON } from '../src/y-prosemirror.js'
+import { prosemirrorToYDoc } from '../src/lib.js'
 import { EditorState, TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import * as basicSchema from 'prosemirror-schema-basic'
 import { findWrapping } from 'prosemirror-transform'
+import { DOMParser } from 'prosemirror-model'
 import { schema as complexSchema } from './complexSchema.js'
 
 const schema = /** @type {any} */ (basicSchema.schema)
@@ -25,6 +27,24 @@ export const testDocTransformation = tc => {
   // test if transforming back and forth from Yjs doc works
   const backandforth = yDocToProsemirrorJSON(prosemirrorJSONToYDoc(/** @type {any} */ (schema), stateJSON))
   t.compare(stateJSON, backandforth)
+}
+
+/**
+ * @param {t.TestCase} tc
+ */
+export const testprosemirrorToYDoc = tc => {
+  const node = document.createElement('p')
+  node.textContent = 'Yjs is awesome'
+  const doc = DOMParser.fromSchema(basicSchema.schema).parse(node)
+
+  const ydocWithRandomClientID = prosemirrorToYDoc(doc)
+  t.assert(ydocWithRandomClientID.clientID !== null, 'ClientID must not be null')
+
+  const existingClientID = 10
+  const ydocWithGlobalClientID = prosemirrorToYDoc(doc, existingClientID)
+  t.assert(ydocWithGlobalClientID.clientID === 10, 'ClientID must be same as existing')
+  const client = ydocWithGlobalClientID.store.clients.get(existingClientID)
+  t.assert(client !== null, 'ClientID must be in the clients Map')
 }
 
 /**
